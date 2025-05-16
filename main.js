@@ -22,7 +22,7 @@ d3.csv("weather.csv").then(data => {
 
     // 1.1: Rename and reformat
     data.forEach(d => {
-        d.year = new Date(d.date); // Parse dates and get year
+        d.year = new Date(d.date).getFullYear(); // Parse dates and get year
         d.precip = +d.average_precipitation; // Convert precipitation to numeric
     }); 
 
@@ -34,30 +34,46 @@ d3.csv("weather.csv").then(data => {
     /*
         Don't make any filters. Set filtered data to be just be `data`.
     */
-    const filteredData1 = "";// Your code here!
+    const filteredData1 = data;// Your code here!
 
     // Check your work:
     console.log("Filtered data 1:", filteredData1);
 
     // 1.3: GROUP AND AGGREGATE
     // "For each [CITY], each [YEAR], I want the {average of} [AVERAGE PRECIPITATION]."
-    const groupedData1 = "";// Your code here!
+    const groupedData1 = d3.groups(filteredData1, d => d.city, d => d.year)
+        .map(([city, yearGroups]) => ({
+        city,
+        values: yearGroups.map(([year, entries]) => ({
+            year,
+            avgPrecip: d3.mean(entries, e => e.precip)
+        }))
+    })); 
     
     // Check your work:
     console.log("Grouped data 1:", groupedData1);
 
-    // 1.4: FLATTEN
-    /* 
-        Flatten your data into an array where each element contains an object whose properties are:
-            - Your x-variable (date)
-            - Your y-variable (avgPrecipitation)
-            - Your color variable (city)
-    */
-    const flattenedData = "";// Your code here!
+//     // 1.4: FLATTEN
+//     /* 
+//         Flatten your data into an array where each element contains an object whose properties are:
+//             - Your x-variable (date)
+//             - Your y-variable (avgPrecipitation)
+//             - Your color variable (city)
+//     */
+//     const flattenedData = groupedData1.flatMap(({ city, values }) =>
+//         values.map(({ year, avgPrecip }) => ({
+//         year,
+//         avgPrecip,
+//         city
+//     }))
+// );
 
-    // // Check your work:
-    console.log("Final flattened data:", flattenedData);
-    console.log("---------------------------------------------------------------------");
+//     // // Check your work:
+//     console.log("Final flattened data:", flattenedData);
+//     console.log("Filtered data 1:", filteredData1);
+//     console.log("Grouped data 1:", groupedData1);
+//     console.log("Final flattened data:", flattenedData);
+
 
     // --- CASE 2: PIVOT ---
     // 2.1: Rename and reformat
@@ -80,7 +96,7 @@ d3.csv("weather.csv").then(data => {
     /*
         Filter the data to just the year of 2014.
     */
-    const filteredData2 = "";// Your code here!
+    const filteredData2 = data.filter(d => d.year === 2014)// Your code here!
 
     // Check your work:
     console.log("Filtered data 2:", filteredData2);
@@ -89,7 +105,13 @@ d3.csv("weather.csv").then(data => {
     /*
         "For each [MONTH], I want the {average of} [AVERAGE], [ACTUAL], and [RECORD PRECIPITATION]."
     */
-    const groupedData2 = "";// Your code here!
+    const groupedData2 = d3.groups(filteredData2, d => d.month)
+        .map(([month, entries]) => ({
+        month,
+        avgActualPrecip: d3.mean(entries, e => e.actualPrecip),
+        avgAvgPrecip: d3.mean(entries, e => e.avgPrecip),
+        avgRecordPrecip: d3.mean(entries, e => e.recordPrecip)
+    }));// Your code here!
 
     // Check your work:
     console.log("Grouped data 2:", groupedData2);
@@ -101,7 +123,11 @@ d3.csv("weather.csv").then(data => {
             - Y-variable (precipitation value)
             - Category (measurement type)
     */
-    const pivotedData = "";// Your code here!
+    const pivotedData = groupedData2.flatMap(({ month, avgActualPrecip, avgAvgPrecip, avgRecordPrecip }) => [
+        { month, precip: avgActualPrecip, type: "Actual" },
+        { month, precip: avgAvgPrecip, type: "Average" },
+        { month, precip: avgRecordPrecip, type: "Record" }
+    ]);// Your code here!
 
     // Check your work:
     console.log("Final pivoted data:", pivotedData);
